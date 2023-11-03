@@ -9,10 +9,12 @@ ENV TZ=Asia/Tokyo \
 
 RUN yum update -y \
     && yum install -y \
-    httpd \
     # japanese package
     glibc-langpack-ja \
-    vim
+    httpd \
+    unzip \
+    vim \
+    zip
 
 # php8.1 enable from amazon-linux-extras & php extension install
 RUN amazon-linux-extras enable php8.1 \
@@ -32,5 +34,11 @@ RUN amazon-linux-extras enable php8.1 \
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 ENV COMPOSER_ALLOW_SUPERUSER 1
 
+COPY ./infra/docker/php/php.ini /etc/php.ini
+COPY ./infra/docker/apache/vhost.conf /etc/httpd/conf.d/vhost.conf
+COPY ./infra/docker/apache/rewrite.conf /etc/httpd/conf.modules.d/rewrite.conf
+
 # start apache
 CMD ["apachectl", "-D", "FOREGROUND"]
+
+WORKDIR /work/laravel_project
